@@ -35,6 +35,7 @@ std::ostream& operator<<
         std::cout << " | " << signal_string(signal);
     }
     std::cout << " | ";
+    return os;
 }
 
 void Simulator::update_simulation
