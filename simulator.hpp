@@ -59,6 +59,17 @@ struct SimulationTimeslice
  * ie. providing open-loop simulation. */
 using Scenario = std::vector<SimulationTimeslice>;
 
+/** A Rule is a tuple that contains 4-elements.
+ * 
+ *  A rule number from 0 to 3
+ *  A min time of execution
+ *  A max time of execution
+ *  elapsed time of execution
+ * 
+*/
+using Rule = std::tuple<int, int, int, int>;
+
+
 /** A simulator replays data from a given scenario.
  * 
  * To advance time in the simulator, call #advance(). The simulator reads
