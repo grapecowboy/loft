@@ -28,13 +28,14 @@ std::ostream& operator<<
     const Simulator& simulator
 )
 {
-    std::cout << "[" << std::setw(4) << simulator.clock_.now() << "s] ";
+    os << "[" << std::setw(4) << simulator.clock_.now() << "s] ";
     for (unsigned lane = 0; lane < simulator.signals_.size(); lane++)
     {
         auto signal = simulator.signals_[lane];
-        std::cout << " | " << signal_string(signal);
+        os << " | " << signal_string(signal);
     }
-    std::cout << " | ";
+    os << " | ";
+    return os;
 }
 
 void Simulator::update_simulation
