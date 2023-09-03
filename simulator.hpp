@@ -114,9 +114,10 @@ public:
         {LS::RED,   LS::RED,   LS::RED,   LS::RED,   LS::GREEN, LS::RED,   LS::GREEN, LS::RED}
     }; 
 
-    currentRule_     = 0;
-    ruleTimeLimit_   = 0;
-    ruleElapsedTime_ = 0;
+    currentRule_        = 0;
+    ruleMinTimeLimit_   = 0;
+    ruleMaxTimeLimit_   = 0;
+    ruleElapsedTime_    = 0;
 
         for (unsigned lane = 0; lane < Lane::COUNT; ++lane)
         {
@@ -168,41 +169,172 @@ public:
      * which does not skip time-slices in the loaded scenario. */
     inline void advance(Clock::Time delta)
     {
+        deltaTime_ = delta;
         clock_.advance(delta);
         update_simulation();
-
-        //update_simulation();
-        //clock_.advance(delta);
- 
-
     }
 
     inline int getNextRule(void)
-    {
-        std::cout << "Current Traffic " << std::endl;
-        
-/*         for (auto n=sensors_.begin(); n!=sensors_.end(); ++n)
+    {    
+        if ( (sensors_[1] == SensorState::SET) || (sensors_[3]==SensorState::SET) &&
+           ( (sensors_[0]==SensorState::CLEAR) && (sensors_[2]==SensorState::CLEAR) && (sensors_[4]==SensorState::CLEAR) && (sensors_[5]==SensorState::CLEAR) && (sensors_[6]==SensorState::CLEAR) && (sensors_[7]==SensorState::CLEAR) )
+           )
         {
-            if(*n == SensorState::CLEAR)
-                std::cout << "CLEAR" << "\t";
-            else if (*n == SensorState::SET)
-                std::cout << "SET" << "\t";
-            else
-                std::cout << "ERR" << "\t";                     
-        } */
-
-        if ( (sensors_[1] == SensorState::SET) || (sensors_[3]==SensorState::SET) )
+            ruleMinTimeLimit_   = 0;
+            ruleMaxTimeLimit_   = 0;
+            ruleElapsedTime_    = 0;
             return 0;
-        else if ( (sensors_[0] == SensorState::SET) || (sensors_[2]==SensorState::SET) )
+        }
+        else if ( (sensors_[0] == SensorState::SET) || (sensors_[2]==SensorState::SET)  &&
+                ( (sensors_[1]==SensorState::CLEAR) && (sensors_[3]==SensorState::CLEAR) && (sensors_[4]==SensorState::CLEAR) && (sensors_[5]==SensorState::CLEAR) && (sensors_[6]==SensorState::CLEAR) && (sensors_[7]==SensorState::CLEAR) )
+                )
+        {
+            ruleMinTimeLimit_   = 0;
+            ruleMaxTimeLimit_   = 0;
+            ruleElapsedTime_    = 0;
             return 1;
-        else if ( (sensors_[5] == SensorState::SET) || (sensors_[7]==SensorState::SET) )
+        }
+        else if ( (sensors_[5] == SensorState::SET) || (sensors_[7]==SensorState::SET) &&
+               ( (sensors_[0]==SensorState::CLEAR) && (sensors_[1]==SensorState::CLEAR) && (sensors_[2]==SensorState::CLEAR) && (sensors_[3]==SensorState::CLEAR) && (sensors_[4]==SensorState::CLEAR) && (sensors_[6]==SensorState::CLEAR) )
+                )
+        {
+            ruleMinTimeLimit_   = 0;
+            ruleMaxTimeLimit_   = 0;
+            ruleElapsedTime_    = 0;
             return 2;
-        else if ( (sensors_[4] == SensorState::SET) || (sensors_[6]==SensorState::SET) )
+        }
+        else if ( (sensors_[4] == SensorState::SET) || (sensors_[6]==SensorState::SET) && 
+               ( (sensors_[0]==SensorState::CLEAR) && (sensors_[1]==SensorState::CLEAR) && (sensors_[2]==SensorState::CLEAR) && (sensors_[3]==SensorState::CLEAR) && (sensors_[5]==SensorState::CLEAR) && (sensors_[7]==SensorState::CLEAR) )
+                )
+        {
+            ruleMinTimeLimit_   = 0;
+            ruleMaxTimeLimit_   = 0;
+            ruleElapsedTime_    = 0;
             return 3;
-        else       
+        }
+        else if ( (sensors_[1] == SensorState::SET) || (sensors_[3]==SensorState::SET) &&
+           ( (sensors_[0]==SensorState::SET) || (sensors_[2]==SensorState::SET) || (sensors_[4]==SensorState::SET) || (sensors_[5]==SensorState::SET) || (sensors_[6]==SensorState::SET) || (sensors_[7]==SensorState::SET) )
+           )
+        {
+            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
+            {
+                ruleMinTimeLimit_   = ruleTable_[0].min;
+                ruleMaxTimeLimit_   = ruleTable_[0].max;
+                ruleElapsedTime_    = 0;
+                return 0;
+            }
+            else if (ruleElapsedTime_ < ruleMinTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 0;
+            }
+            else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 0;
+            }
+            else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_ = 0;
+                return 0;
+            }
+            
+            
+        }
+        else if ( (sensors_[0] == SensorState::SET) || (sensors_[2]==SensorState::SET)  &&
+                ( (sensors_[1]==SensorState::SET) && (sensors_[3]==SensorState::SET) && (sensors_[4]==SensorState::SET) && (sensors_[5]==SensorState::SET) && (sensors_[6]==SensorState::SET) && (sensors_[7]==SensorState::SET) )
+                )
+        {
+            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==9)
+            {
+                ruleMinTimeLimit_   = ruleTable_[1].min;
+                ruleMaxTimeLimit_   = ruleTable_[1].max;
+                ruleElapsedTime_    = 0;
+                return 1;
+            }
+            else if (ruleElapsedTime_ < ruleMinTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 1;
+            }
+            else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 1;
+            }
+            else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_ = 0;
+                return 1;
+            }           
+        }
+        else if ( (sensors_[5] == SensorState::SET) || (sensors_[7]==SensorState::SET) &&
+               ( (sensors_[0]==SensorState::SET) && (sensors_[1]==SensorState::SET) && (sensors_[2]==SensorState::SET) && (sensors_[3]==SensorState::SET) && (sensors_[4]==SensorState::SET) && (sensors_[6]==SensorState::SET) )
+                )
+        {
+            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
+            {
+                ruleMinTimeLimit_   = ruleTable_[2].min;
+                ruleMaxTimeLimit_   = ruleTable_[2].max;
+                ruleElapsedTime_    = 0;
+                return 2;
+            }
+           else if (ruleElapsedTime_ < ruleMinTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 2;
+            }
+            else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 2;
+            }
+            else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_ = 0;
+                return 2;
+            }            
+        }
+        else if ( (sensors_[4] == SensorState::SET) || (sensors_[6]==SensorState::SET) && 
+               ( (sensors_[0]==SensorState::SET) && (sensors_[1]==SensorState::SET) && (sensors_[2]==SensorState::SET) && (sensors_[3]==SensorState::SET) && (sensors_[5]==SensorState::SET) && (sensors_[7]==SensorState::SET) )
+                )
+        {
+            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==9)
+            {
+                ruleMinTimeLimit_   = ruleTable_[3].min;
+                ruleMaxTimeLimit_   = ruleTable_[3].max;
+                ruleElapsedTime_    = 0;
+                return 3;
+            }
+           else if (ruleElapsedTime_ < ruleMinTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 3;
+            }
+            else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_+=deltaTime_;
+                return 3;
+            }
+            else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
+            {
+                ruleElapsedTime_ = 0;
+                return 3;
+            }            
+        }
+        else
+        { //this code should never be reached
+            ruleMinTimeLimit_   = 0;
+            ruleMaxTimeLimit_   = 0;
+            ruleElapsedTime_    = 0;       
             return 0;
+        }
+
+        return -1;
     }
 
+    void applyRule(void);
+    
 private:
     /** Updates the simulator state.
      * 
@@ -218,7 +350,9 @@ private:
     Rule currentRule_;
     RuleTimes ruleTable_;
     RuleTrafficSignals ruleLights_;
-    Clock::Time ruleTimeLimit_;
+    Clock::Time ruleMinTimeLimit_;
+    Clock::Time ruleMaxTimeLimit_;
     Clock::Time ruleElapsedTime_;
+    Clock::Time deltaTime_;
 
 };
