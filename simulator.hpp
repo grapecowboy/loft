@@ -67,8 +67,17 @@ using Scenario = std::vector<SimulationTimeslice>;
  *  elapsed time of execution
  * 
 */
-using Rule = std::tuple<int, int, int, int>;
+using Rule = int;
 
+struct RuleLength
+{
+    Clock::Time min;
+    Clock::Time max;
+};
+
+using RuleTimes = std::vector< RuleLength >;
+using RuleTrafficSignals = std::vector< TrafficSignals >;
+using LS = SignalState;
 
 /** A simulator replays data from a given scenario.
  * 
@@ -88,6 +97,23 @@ public:
         scenario_(scenario),
         done_(false)
     { 
+        currentRule_ = 0;
+        ruleTable_ =
+        {
+            {10, 60},
+            {30,120},
+            {10,30},
+            {30,60}
+        };
+
+    ruleLights_ = 
+    {
+        {LS::RED,   LS::GREEN, LS::RED,   LS::GREEN, LS::RED,   LS::RED,   LS::RED,   LS::RED},
+        {LS::GREEN, LS::RED,   LS::GREEN, LS::RED,   LS::RED,   LS::RED,   LS::RED,   LS::RED},
+        {LS::RED,   LS::RED,   LS::RED,   LS::RED,   LS::RED,   LS::GREEN, LS::RED,   LS::GREEN},
+        {LS::RED,   LS::RED,   LS::RED,   LS::RED,   LS::GREEN, LS::RED,   LS::GREEN, LS::RED}
+    }; 
+
         for (unsigned lane = 0; lane < Lane::COUNT; ++lane)
         {
             sensors_[lane] = SensorState::CLEAR;
@@ -154,4 +180,8 @@ private:
     Clock clock_;             ///< global simulation clock
     VehicleSensors sensors_;  ///< sensor state for given timestamp
     TrafficSignals signals_;     ///< simulated traffic signal output
+    Rule currentRule_;
+    RuleTimes ruleTable_;
+    RuleTrafficSignals ruleLights_;
+
 };

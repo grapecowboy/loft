@@ -64,4 +64,6 @@ void Simulator::update_simulation
 
     // update simulation state from scenario
     sensors_ = scenario_timeslice->sensors;
+    currentRule_+=1;
+    currentRule_%=4;
 }
