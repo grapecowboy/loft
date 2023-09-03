@@ -38,6 +38,8 @@ std::ostream& operator<<
     return os;
 }
 
+
+
 void Simulator::update_simulation
 (
     void
@@ -64,6 +66,6 @@ void Simulator::update_simulation
 
     // update simulation state from scenario
     sensors_ = scenario_timeslice->sensors;
-    currentRule_+=1;
-    currentRule_%=4;
+    //currentRule_+=1;
+    currentRule_ = getNextRule();
 }

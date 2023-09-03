@@ -114,6 +114,10 @@ public:
         {LS::RED,   LS::RED,   LS::RED,   LS::RED,   LS::GREEN, LS::RED,   LS::GREEN, LS::RED}
     }; 
 
+    currentRule_     = 0;
+    ruleTimeLimit_   = 0;
+    ruleElapsedTime_ = 0;
+
         for (unsigned lane = 0; lane < Lane::COUNT; ++lane)
         {
             sensors_[lane] = SensorState::CLEAR;
@@ -166,6 +170,37 @@ public:
     {
         clock_.advance(delta);
         update_simulation();
+
+        //update_simulation();
+        //clock_.advance(delta);
+ 
+
+    }
+
+    inline int getNextRule(void)
+    {
+        std::cout << "Current Traffic " << std::endl;
+        
+/*         for (auto n=sensors_.begin(); n!=sensors_.end(); ++n)
+        {
+            if(*n == SensorState::CLEAR)
+                std::cout << "CLEAR" << "\t";
+            else if (*n == SensorState::SET)
+                std::cout << "SET" << "\t";
+            else
+                std::cout << "ERR" << "\t";                     
+        } */
+
+        if ( (sensors_[1] == SensorState::SET) || (sensors_[3]==SensorState::SET) )
+            return 0;
+        else if ( (sensors_[0] == SensorState::SET) || (sensors_[2]==SensorState::SET) )
+            return 1;
+        else if ( (sensors_[5] == SensorState::SET) || (sensors_[7]==SensorState::SET) )
+            return 2;
+        else if ( (sensors_[4] == SensorState::SET) || (sensors_[6]==SensorState::SET) )
+            return 3;
+        else       
+            return 0;
     }
 
 private:
@@ -183,5 +218,7 @@ private:
     Rule currentRule_;
     RuleTimes ruleTable_;
     RuleTrafficSignals ruleLights_;
+    Clock::Time ruleTimeLimit_;
+    Clock::Time ruleElapsedTime_;
 
 };
