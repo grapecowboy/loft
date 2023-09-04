@@ -72,23 +72,9 @@ void Simulator::update_simulation
 
 void Simulator::applyRule(void)
 {
-    //std::cout << "Rule to apply is " << currentRule_ << std::endl;
-    //std::cout << "Rule contents " << std::endl;
-
-/*     for(auto i : ruleLights_[ currentRule_ ])
-        if (i==LS::RED)
-        {
-            std::cout << "RED" << "\t";
-        }
-        else if (i==LS::GREEN)
-        {
-            std::cout << "GREEN" << "\t";
-        } */
-
      for (unsigned lane = 0; lane < signals_.size(); lane++)
      {
             signals_[ lane ] = ruleLights_[currentRule_][lane];
      }
 
-    //std::cout << std::endl;
 }
