@@ -78,3 +78,58 @@ void Simulator::applyRule(void)
      }
 
 }
+
+int Simulator::getRuleOpposingTraffic(void)
+{
+    std::vector<SensorState> trafficCount;
+
+
+    for (auto i : opposition_[currentRule_])
+    {
+        if (sensors_[ i] == SensorState::SET)
+            trafficCount.push_back(SensorState::SET);
+    }
+
+    return trafficCount.size();
+}
+
+int Simulator::getRuleTraffic(void)
+{
+    std::vector<SensorState> trafficCount;
+
+    if (currentRule_==0)
+    {
+        if(sensors_[Lane::N_W]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET);
+        
+        if(sensors_[Lane::S_E]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET); 
+    }
+    else if (currentRule_==1)
+    {
+        if(sensors_[Lane::N_N]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET);
+        
+        if(sensors_[Lane::S_S]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET); 
+    }
+    else if (currentRule_==2)
+    {
+        if(sensors_[Lane::E_N]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET);
+        
+        if(sensors_[Lane::W_S]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET); 
+    }
+    else if (currentRule_==3)
+    {
+        if(sensors_[Lane::E_E]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET);
+        
+        if(sensors_[Lane::W_W]==SensorState::SET)
+            trafficCount.push_back(SensorState::SET); 
+    }
+
+    return trafficCount.size();
+
+}

@@ -78,6 +78,7 @@ struct RuleLength
 using RuleTimes = std::vector< RuleLength >;
 using RuleTrafficSignals = std::vector< TrafficSignals >;
 using LS = SignalState;
+using RuleOpposingTraffic = std::vector< std::array<int,6>  >;
 
 /** A simulator replays data from a given scenario.
  * 
@@ -124,7 +125,20 @@ public:
             sensors_[lane] = SensorState::CLEAR;
             signals_[lane] = SignalState::RED;
         }
-        
+
+    opposition_ =
+    {
+ /*            { 0, 2, 4,5,6,7},
+            { 1, 3, 4, 5, 6, 7},
+            { 0, 1, 2, 3, 4, 6},
+            {0, 1, 2, 3, 5, 7} */
+
+            {Lane::N_N, Lane::S_S, Lane::E_E, Lane::E_N, Lane::W_W, Lane::W_S},
+            {Lane::N_W, Lane::S_E, Lane::E_E, Lane::E_N, Lane::W_W, Lane::W_S},
+            {Lane::N_N, Lane::N_W, Lane::S_S, Lane::S_E, Lane::E_E, Lane::W_W},
+            {Lane::N_N, Lane::N_W, Lane::S_S, Lane::S_E, Lane::E_N, Lane::W_S}            
+
+    };    
         update_simulation(); // seed the simulator
     }
 
@@ -175,46 +189,56 @@ public:
     }
 
     inline int getNextRule(void)
-    {    
-        if ( ( (sensors_[Lane::N_W] == SensorState::SET) || (sensors_[Lane::S_E]==SensorState::SET)  ) &&
-           ( (sensors_[0]==SensorState::CLEAR) && (sensors_[2]==SensorState::CLEAR) && (sensors_[4]==SensorState::CLEAR) && (sensors_[5]==SensorState::CLEAR) && (sensors_[6]==SensorState::CLEAR) && (sensors_[7]==SensorState::CLEAR) )
-           )
+    {   
+        int opposingTrafficCount = getRuleOpposingTraffic();
+
+        if (clock_.now() == 0)
+        {
+
+            if (opposingTrafficCount == 0)
+            {
+                ruleMinTimeLimit_   = 0;
+                ruleMaxTimeLimit_   = 0;
+            }
+            else if ( opposingTrafficCount > 0)
+            {
+                ruleMinTimeLimit_   = ruleTable_[0].min;
+                ruleMaxTimeLimit_   = ruleTable_[0].max;                
+            }       
+            
+            ruleElapsedTime_ = 0;
+            return 0;
+        }
+
+        if ( (currentRule_==0) && (opposingTrafficCount==0) )
         {
             ruleMinTimeLimit_   = 0;
             ruleMaxTimeLimit_   = 0;
             ruleElapsedTime_    = 0;
             return 0;
         }
-        else if ( ( (sensors_[0] == SensorState::SET) || (sensors_[2]==SensorState::SET) ) &&
-                ( (sensors_[1]==SensorState::CLEAR) && (sensors_[3]==SensorState::CLEAR) && (sensors_[4]==SensorState::CLEAR) && (sensors_[5]==SensorState::CLEAR) && (sensors_[6]==SensorState::CLEAR) && (sensors_[7]==SensorState::CLEAR) )
-                )
+        else if ( (currentRule_==1) && (opposingTrafficCount==0))
         {
             ruleMinTimeLimit_   = 0;
             ruleMaxTimeLimit_   = 0;
             ruleElapsedTime_    = 0;
             return 1;
         }
-        else if ( ( (sensors_[5] == SensorState::SET) || (sensors_[7]==SensorState::SET) ) &&
-               ( (sensors_[0]==SensorState::CLEAR) && (sensors_[1]==SensorState::CLEAR) && (sensors_[2]==SensorState::CLEAR) && (sensors_[3]==SensorState::CLEAR) && (sensors_[4]==SensorState::CLEAR) && (sensors_[6]==SensorState::CLEAR) )
-                )
+        else if ( (currentRule_==2) && (opposingTrafficCount==0))
         {
             ruleMinTimeLimit_   = 0;
             ruleMaxTimeLimit_   = 0;
             ruleElapsedTime_    = 0;
             return 2;
-        }
-        else if ( ( (sensors_[4] == SensorState::SET) || (sensors_[6]==SensorState::SET) )&& 
-               ( (sensors_[0]==SensorState::CLEAR) && (sensors_[1]==SensorState::CLEAR) && (sensors_[2]==SensorState::CLEAR) && (sensors_[3]==SensorState::CLEAR) && (sensors_[5]==SensorState::CLEAR) && (sensors_[7]==SensorState::CLEAR) )
-                )
+        }    
+        else if ( (currentRule_==3) && (opposingTrafficCount==0))
         {
             ruleMinTimeLimit_   = 0;
             ruleMaxTimeLimit_   = 0;
             ruleElapsedTime_    = 0;
             return 3;
         }
-        else if ( ( (sensors_[1] == SensorState::SET) || (sensors_[3]==SensorState::SET) ) &&
-           ( (sensors_[0]==SensorState::SET) || (sensors_[2]==SensorState::SET) || (sensors_[4]==SensorState::SET) || (sensors_[5]==SensorState::SET) || (sensors_[6]==SensorState::SET) || (sensors_[7]==SensorState::SET) )
-           )
+        else if ( (currentRule_==0) && (opposingTrafficCount>0) )
         {
             if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
             {
@@ -225,10 +249,12 @@ public:
             else if (ruleElapsedTime_ < ruleMinTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 0;
             }
             else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 0;
             }
             else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
             {
@@ -239,91 +265,91 @@ public:
             }
             
             return 0;
-        }
-        else if ( ( (sensors_[0] == SensorState::SET) || (sensors_[2]==SensorState::SET) ) &&
-                ( (sensors_[1]==SensorState::SET) && (sensors_[3]==SensorState::SET) && (sensors_[4]==SensorState::SET) && (sensors_[5]==SensorState::SET) && (sensors_[6]==SensorState::SET) && (sensors_[7]==SensorState::SET) )
-                )
+        }          
+        else if ( (currentRule_==1) && (opposingTrafficCount>0) )
         {
-            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==9)
+            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
             {
-                ruleMinTimeLimit_   = ruleTable_[1].min;
-                ruleMaxTimeLimit_   = ruleTable_[1].max;
+                ruleMinTimeLimit_   = ruleTable_[0].min;
+                ruleMaxTimeLimit_   = ruleTable_[0].max;
                 ruleElapsedTime_    = 0;
             }
             else if (ruleElapsedTime_ < ruleMinTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 1;
             }
             else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 1;
             }
             else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
             {
-                ruleMinTimeLimit_   = ruleTable_[2].min;
-                ruleMaxTimeLimit_   = ruleTable_[2].max;
+                ruleMinTimeLimit_   = ruleTable_[1].min;
+                ruleMaxTimeLimit_   = ruleTable_[1].max;
                 ruleElapsedTime_ = 0;
                 return 2;
-            }   
-
-            return 1;        
+            }
+            
+            return 1;
         }
-        else if (( (sensors_[5] == SensorState::SET) || (sensors_[7]==SensorState::SET)) &&
-               ( (sensors_[0]==SensorState::SET) && (sensors_[1]==SensorState::SET) && (sensors_[2]==SensorState::SET) && (sensors_[3]==SensorState::SET) && (sensors_[4]==SensorState::SET) && (sensors_[6]==SensorState::SET) )
-                )
+        else if ( (currentRule_==2) && (opposingTrafficCount>0) )
         {
             if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
             {
-                ruleMinTimeLimit_   = ruleTable_[2].min;
-                ruleMaxTimeLimit_   = ruleTable_[2].max;
+                ruleMinTimeLimit_   = ruleTable_[0].min;
+                ruleMaxTimeLimit_   = ruleTable_[0].max;
                 ruleElapsedTime_    = 0;
             }
-           else if (ruleElapsedTime_ < ruleMinTimeLimit_)
+            else if (ruleElapsedTime_ < ruleMinTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 2;
             }
             else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 2;
             }
             else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
             {
-                ruleMinTimeLimit_   = ruleTable_[3].min;
-                ruleMaxTimeLimit_   = ruleTable_[3].max;                
+                ruleMinTimeLimit_   = ruleTable_[1].min;
+                ruleMaxTimeLimit_   = ruleTable_[1].max;
                 ruleElapsedTime_ = 0;
                 return 3;
             }
-
-            return 2;            
+            
+            return 2;
         }
-        else if ( ( (sensors_[4] == SensorState::SET) || (sensors_[6]==SensorState::SET) ) && 
-               ( (sensors_[0]==SensorState::SET) && (sensors_[1]==SensorState::SET) && (sensors_[2]==SensorState::SET) && (sensors_[3]==SensorState::SET) && (sensors_[5]==SensorState::SET) && (sensors_[7]==SensorState::SET) )
-                )
+        else if ( (currentRule_==3) && (opposingTrafficCount>0) )
         {
-            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==9)
+            if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
             {
-                ruleMinTimeLimit_   = ruleTable_[3].min;
-                ruleMaxTimeLimit_   = ruleTable_[3].max;
+                ruleMinTimeLimit_   = ruleTable_[0].min;
+                ruleMaxTimeLimit_   = ruleTable_[0].max;
                 ruleElapsedTime_    = 0;
             }
-           else if (ruleElapsedTime_ < ruleMinTimeLimit_)
+            else if (ruleElapsedTime_ < ruleMinTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 3;
             }
             else if (ruleElapsedTime_>=ruleMinTimeLimit_ && ruleElapsedTime_<ruleMaxTimeLimit_)
             {
                 ruleElapsedTime_+=deltaTime_;
+                return 3;
             }
             else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
             {
-                ruleMinTimeLimit_   = ruleTable_[0].min;
-                ruleMaxTimeLimit_   = ruleTable_[0].max;
+                ruleMinTimeLimit_   = ruleTable_[1].min;
+                ruleMaxTimeLimit_   = ruleTable_[1].max;
                 ruleElapsedTime_ = 0;
                 return 0;
             }
-
-            return 3;            
-        }
+            
+            return 3;
+        }    
         else
         { //this code should never be reached
             ruleMinTimeLimit_   = 0;
@@ -332,10 +358,13 @@ public:
             return 0;
         }
 
+        //this code should never be reached
         return -1;
     }
 
     void applyRule(void);
+    int getRuleOpposingTraffic(void);
+    int getRuleTraffic(void);
     
 private:
     /** Updates the simulator state.
@@ -356,5 +385,6 @@ private:
     Clock::Time ruleMaxTimeLimit_;
     Clock::Time ruleElapsedTime_;
     Clock::Time deltaTime_;
+    RuleOpposingTraffic opposition_;
 
 };
