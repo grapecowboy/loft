@@ -191,6 +191,7 @@ public:
     inline int getNextRule(void)
     {   
         int opposingTrafficCount = getRuleOpposingTraffic();
+        int ruleTrafficCount = getRuleTraffic();
 
         if (clock_.now() == 0)
         {
@@ -265,6 +266,15 @@ public:
             }
             
             return 0;
+        }
+        else if (  (ruleTrafficCount==0) )
+        {
+                int nextRule = (nextRule+1)%4;
+
+                ruleMinTimeLimit_   = ruleTable_[ nextRule ].min;
+                ruleMaxTimeLimit_   = ruleTable_[ nextRule ].max;
+                ruleElapsedTime_    = 0;
+                return nextRule;    
         }          
         else if ( (currentRule_==1) && (opposingTrafficCount>0) )
         {
