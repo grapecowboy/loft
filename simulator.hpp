@@ -270,8 +270,8 @@ public:
         {
             if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
             {
-                ruleMinTimeLimit_   = ruleTable_[0].min;
-                ruleMaxTimeLimit_   = ruleTable_[0].max;
+                ruleMinTimeLimit_   = ruleTable_[1].min;
+                ruleMaxTimeLimit_   = ruleTable_[1].max;
                 ruleElapsedTime_    = 0;
             }
             else if (ruleElapsedTime_ < ruleMinTimeLimit_)
@@ -286,8 +286,8 @@ public:
             }
             else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
             {
-                ruleMinTimeLimit_   = ruleTable_[1].min;
-                ruleMaxTimeLimit_   = ruleTable_[1].max;
+                ruleMinTimeLimit_   = ruleTable_[2].min;
+                ruleMaxTimeLimit_   = ruleTable_[2].max;
                 ruleElapsedTime_ = 0;
                 return 2;
             }
@@ -298,8 +298,8 @@ public:
         {
             if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
             {
-                ruleMinTimeLimit_   = ruleTable_[0].min;
-                ruleMaxTimeLimit_   = ruleTable_[0].max;
+                ruleMinTimeLimit_   = ruleTable_[2].min;
+                ruleMaxTimeLimit_   = ruleTable_[2].max;
                 ruleElapsedTime_    = 0;
             }
             else if (ruleElapsedTime_ < ruleMinTimeLimit_)
@@ -314,8 +314,8 @@ public:
             }
             else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
             {
-                ruleMinTimeLimit_   = ruleTable_[1].min;
-                ruleMaxTimeLimit_   = ruleTable_[1].max;
+                ruleMinTimeLimit_   = ruleTable_[3].min;
+                ruleMaxTimeLimit_   = ruleTable_[3].max;
                 ruleElapsedTime_ = 0;
                 return 3;
             }
@@ -326,8 +326,8 @@ public:
         {
             if (ruleMinTimeLimit_==0 && ruleMaxTimeLimit_==0)
             {
-                ruleMinTimeLimit_   = ruleTable_[0].min;
-                ruleMaxTimeLimit_   = ruleTable_[0].max;
+                ruleMinTimeLimit_   = ruleTable_[3].min;
+                ruleMaxTimeLimit_   = ruleTable_[3].max;
                 ruleElapsedTime_    = 0;
             }
             else if (ruleElapsedTime_ < ruleMinTimeLimit_)
@@ -342,8 +342,8 @@ public:
             }
             else if (ruleElapsedTime_ >= ruleMaxTimeLimit_)
             {
-                ruleMinTimeLimit_   = ruleTable_[1].min;
-                ruleMaxTimeLimit_   = ruleTable_[1].max;
+                ruleMinTimeLimit_   = ruleTable_[0].min;
+                ruleMaxTimeLimit_   = ruleTable_[0].max;
                 ruleElapsedTime_ = 0;
                 return 0;
             }
